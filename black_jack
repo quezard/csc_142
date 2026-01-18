@@ -1,0 +1,82 @@
+import random
+
+# Move a card from deck to hand
+def draw_card(hand, deck):
+    hand.append(deck.pop())
+
+# Calculate the value of a hand
+def hand_value(hand):
+    value = 0
+    aces = 0
+
+    for card in hand:
+        if card in ["J", "Q", "K"]:
+            value += 10
+        elif card == "A":
+            value += 11
+            aces += 1
+        else:
+            value += int(card)
+
+    # Adjust for aces if over 21
+    while value > 21 and aces:
+        value -= 10
+        aces -= 1
+
+    return value
+
+def main():
+    deck = ["2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"] * 4
+    player_hand = []
+    dealer_hand = []
+
+    random.shuffle(deck)
+
+    # Initial deal
+    draw_card(player_hand, deck)
+    draw_card(player_hand, deck)
+    draw_card(dealer_hand, deck)
+    draw_card(dealer_hand, deck)
+
+    # Player turn
+    while True:
+        print("\nYour hand:", player_hand, "Value:", hand_value(player_hand))
+        print("Dealer shows:", dealer_hand[0])
+
+        if hand_value(player_hand) > 21:
+            print("You bust! Dealer wins.")
+            return
+
+        choice = input("Hit or stand? (h/s): ").lower()
+        if choice == "h":
+            draw_card(player_hand, deck)
+        elif choice == "s":
+            break
+        else:
+            print("Invalid choice.")
+
+    # Dealer turn
+    print("\nDealer's hand:", dealer_hand, "Value:", hand_value(dealer_hand))
+    while hand_value(dealer_hand) < 17:
+        draw_card(dealer_hand, deck)
+        print("Dealer hits:", dealer_hand, "Value:", hand_value(dealer_hand))
+
+    # Final results
+    player_total = hand_value(player_hand)
+    dealer_total = hand_value(dealer_hand)
+
+    print("\nFinal Hands")
+    print("Your hand:", player_hand, "Value:", player_total)
+    print("Dealer hand:", dealer_hand, "Value:", dealer_total)
+
+    if dealer_total > 21:
+        print("Dealer busts! You win!")
+    elif player_total > dealer_total:
+        print("You win!")
+    elif player_total < dealer_total:
+        print("Dealer wins!")
+    else:
+        print("It's a tie!")
+
+if __name__ == "__main__":
+    main()
