@@ -1,0 +1,62 @@
+import random
+
+class Review:
+    def __init__(self, rating, text):
+        self.rating = rating
+        self.text = text
+
+    def __str__(self):
+        return f"Rating: {self.rating}/5 — {self.text}"
+class Movie:
+    def __init__(self, title):
+        self.title = title
+        self.reviews = []
+
+    def add_review(self, review):
+        self.reviews.append(review)
+
+    def average_rating(self):
+        if not self.reviews:
+            return 0
+        total = sum(review.rating for review in self.reviews)
+        return total / len(self.reviews)
+
+    def display_reviews(self):
+        if not self.reviews:
+            print("No reviews yet.")
+            return
+        for review in self.reviews:
+            print(review)
+
+    def best_review(self):
+        if not self.reviews:
+            return None
+        max_rating = max(review.rating for review in self.reviews)
+        best = [r for r in self.reviews if r.rating == max_rating]
+        return random.choice(best)
+
+    def worst_review(self):
+        if not self.reviews:
+            return None
+        min_rating = min(review.rating for review in self.reviews)
+        worst = [r for r in self.reviews if r.rating == min_rating]
+        return random.choice(worst)
+# Driver code
+movie = Movie("Interstellar")
+
+movie.add_review(Review(5, "Absolutely amazing visuals and story."))
+movie.add_review(Review(4, "Great movie, a little confusing at times."))
+movie.add_review(Review(5, "One of the best sci-fi movies ever made."))
+movie.add_review(Review(2, "Too long and slow for my taste."))
+
+print(f"Movie: {movie.title}")
+print(f"Average rating: {movie.average_rating():.2f}\n")
+
+print("All reviews:")
+movie.display_reviews()
+
+print("\nBest review:")
+print(movie.best_review())
+
+print("\nWorst review:")
+print(movie.worst_review())
