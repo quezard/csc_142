@@ -19,11 +19,12 @@ ball_image = pygame.transform.scale(ball_image, (50, 50))
 
 
 # text function
-def draw_text(surface, text, x, y, color, size=24):
-    font = pygame.font.SysFont(None, size)
-    img = font.render(text, True, color)
-    surface.blit(img, (x, y))
-
+def draw_text(surface, text, x, y, color, font_size=24):
+    text_font = pygame.font.SysFont(None, font_size)
+    text_surface = text_font.render(text, True, color)
+    text_rect = text_surface.get_rect()
+    text_rect.topleft = (x, y)
+    surface.blit(text_surface, text_rect)
 
 class Ball:
     def __init__(self):

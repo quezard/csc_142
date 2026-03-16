@@ -1,89 +1,72 @@
 import pygame
 import pygwidgets
-import sys
 
 pygame.init()
 
-# Window setup
+# Window
 WINDOW_WIDTH = 500
 WINDOW_HEIGHT = 300
 window = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
-pygame.display.set_caption("Temperature Converter")
+pygame.display.set_caption('Temperature Converter')
+
+# Colors
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
+
+# Widgets
+inputTemp = pygwidgets.InputText(window, (50, 50), 'Enter Temp:', width=200)
+
+radioC = pygwidgets.TextRadioButton(window, (50, 100), 'Celsius', group=1, value=True)
+radioF = pygwidgets.TextRadioButton(window, (200, 100), 'Fahrenheit', group=1)
+
+convertButton = pygwidgets.TextButton(window, (50, 150), 'Convert')
+
+outputText = pygwidgets.DisplayText(window, (50, 220), 'Result: ', fontSize=30)
 
 clock = pygame.time.Clock()
 
-# Widgets
-inputBox = pygwidgets.InputText(window, (50, 50), width=200)
-
-# Radio buttons: group=1 passed positionally
-radioFtoC = pygwidgets.TextRadioButton(window, (50, 100),
-                                       "Fahrenheit to Celsius",
-                                       1, True)
-
-radioCtoF = pygwidgets.TextRadioButton(window, (50, 130),
-                                       "Celsius to Fahrenheit",
-                                       1)
-
-convertButton = pygwidgets.TextButton(window, (50, 180), "Convert")
-
-outputDisplay = pygwidgets.DisplayText(window, (50, 230),
-                                       value="Result will appear here",
-                                       fontSize=24)
-
-
-def convertTemperature():
-    """Convert the input temperature based on selected radio button"""
-    text = inputBox.getValue()
-
-    try:
-        temp = float(text)
-
-        if radioFtoC.getValue():
-            # Fahrenheit to Celsius
-            result = (temp - 32) / (9 / 5)
-            outputDisplay.setValue(f"{result:.2f} °C")  # ✅ string with units
-        else:
-            # Celsius to Fahrenheit
-            result = temp * 9 / 5 + 32
-            outputDisplay.setValue(f"{result:.2f} °F")  # ✅ string with units
-
-    except ValueError:
-        outputDisplay.setValue("Invalid input")  # ✅ always string
-
-
-# Main loop
-while True:
-    clock.tick(30)
+# Main Loop
+running = True
+while running:
 
     for event in pygame.event.get():
+
         if event.type == pygame.QUIT:
-            pygame.quit()
-            sys.exit()
+            running = False
 
-        # Handle events for widgets
-        inputBox.handleEvent(event)
-        radioFtoC.handleEvent(event)
-        radioCtoF.handleEvent(event)
+        inputTemp.handleEvent(event)
 
-        # A. Press Enter in TextInput
-        if inputBox.handleEvent(event):
-            convertTemperature()
-
-        # B. Changing selected radio button
-        if radioFtoC.handleEvent(event) or radioCtoF.handleEvent(event):
-            convertTemperature()
-
-        # C. Press Convert button
+        # Button press
         if convertButton.handleEvent(event):
-            convertTemperature()
 
-    # Draw everything
-    window.fill((240, 240, 240))
+            try:
+                temp = float(inputTemp.getValue())
 
-    inputBox.draw()
-    radioFtoC.draw()
-    radioCtoF.draw()
+                if radioC.getValue():  # Convert C → F
+                    result = temp * 9/5 + 32
+                    outputText.setValue(f"{result:.2f} °F")
+
+                else:  # Convert F → C
+                    result = (temp - 32) / (9/5)
+                    outputText.setValue(f"{result:.2f} °C")
+
+            except:
+                outputText.setValue("Invalid Input")
+
+        # Radio buttons
+        radioC.handleEvent(event)
+        radioF.handleEvent(event)
+
+    # Draw screen
+    window.fill(WHITE)
+
+    inputTemp.draw()
+    radioC.draw()
+    radioF.draw()
     convertButton.draw()
-    outputDisplay.draw()
+    outputText.draw()
 
     pygame.display.update()
+    clock.tick(30)
+
+pygame.quit()
