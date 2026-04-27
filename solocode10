@@ -1,0 +1,128 @@
+import pygame
+import pygwidgets
+import random
+import sys
+
+# --- Setup ---
+pygame.init()
+WIDTH, HEIGHT = 800, 600
+window = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption("Dodge the Meteors")
+
+clock = pygame.time.Clock()
+FPS = 60
+
+# --- Colors ---
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
+RED = (200, 0, 0)
+BLUE = (0, 100, 255)
+
+# --- Player ---
+player_size = 50
+player_x = WIDTH // 2
+player_y = HEIGHT - 80
+player_speed = 7
+
+# --- Meteors ---
+meteors = []
+meteor_size = 40
+meteor_speed = 4
+
+# --- Timer ---
+score = 0
+score_timer = pygame.time.get_ticks()
+spawn_timer = pygame.time.get_ticks()
+
+# --- UI ---
+score_display = pygwidgets.DisplayText(window, (10, 10), "Score: 0", fontSize=30)
+game_over_text = pygwidgets.DisplayText(window, (WIDTH//2 - 100, HEIGHT//2 - 50),
+                                        "GAME OVER", fontSize=40, textColor=RED)
+
+restart_button = pygwidgets.TextButton(window, (WIDTH//2 - 70, HEIGHT//2 + 20),
+                                       "Restart", width=140)
+
+# --- Game State ---
+game_over = False
+
+# --- Functions ---
+def spawn_meteor():
+    x = random.randint(0, WIDTH - meteor_size)
+    meteors.append([x, 0])
+
+def reset_game():
+    global meteors, player_x, score, meteor_speed, game_over
+    meteors = []
+    player_x = WIDTH // 2
+    score = 0
+    meteor_speed = 4
+    game_over = False
+
+# --- Main Loop ---
+while True:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            pygame.quit()
+            sys.exit()
+
+        if game_over:
+            if restart_button.handleEvent(event):
+                reset_game()
+
+    keys = pygame.key.get_pressed()
+
+    if not game_over:
+        # --- Player Movement ---
+        if keys[pygame.K_LEFT]:
+            player_x -= player_speed
+        if keys[pygame.K_RIGHT]:
+            player_x += player_speed
+
+        player_x = max(0, min(WIDTH - player_size, player_x))
+
+        # --- Spawn Meteors (Timer) ---
+        if pygame.time.get_ticks() - spawn_timer > 800:
+            spawn_meteor()
+            spawn_timer = pygame.time.get_ticks()
+
+        # --- Move Meteors (Animation) ---
+        for meteor in meteors:
+            meteor[1] += meteor_speed
+
+        # --- Remove Off-Screen Meteors ---
+        meteors = [m for m in meteors if m[1] < HEIGHT]
+
+        # --- Collision Detection ---
+        for meteor in meteors:
+            if (player_x < meteor[0] + meteor_size and
+                player_x + player_size > meteor[0] and
+                player_y < meteor[1] + meteor_size and
+                player_y + player_size > meteor[1]):
+                game_over = True
+
+        # --- Score Timer ---
+        if pygame.time.get_ticks() - score_timer > 1000:
+            score += 1
+            score_timer = pygame.time.get_ticks()
+            meteor_speed += 0.2  # Increase difficulty
+
+    # --- Draw ---
+    window.fill(BLACK)
+
+    # Player
+    pygame.draw.rect(window, BLUE, (player_x, player_y, player_size, player_size))
+
+    # Meteors
+    for meteor in meteors:
+        pygame.draw.rect(window, RED, (meteor[0], meteor[1], meteor_size, meteor_size))
+
+    # Score UI
+    score_display.setValue(f"Score: {score}")
+    score_display.draw()
+
+    if game_over:
+        game_over_text.draw()
+        restart_button.draw()
+
+    pygame.display.update()
+    clock.tick(FPS)
